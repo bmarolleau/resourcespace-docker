@@ -1,4 +1,4 @@
-FROM quay.io/deis/alpine
+FROM quay.io/deis/alpine:3.1
 
 VOLUME /etc/nginx/ssl
 
