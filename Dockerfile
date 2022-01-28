@@ -1,31 +1,47 @@
-FROM quay.io/deis/alpine:3.1
+FROM ubuntu:latest
+MAINTAINER Stefan Weiberg <sweiberg@suse.com>
+ENV DEBIAN_FRONTEND="noninteractive"
+RUN apt-get update && apt-get install -y \
+    vim \
+    imagemagick \
+    apache2 \
+    subversion \
+    ghostscript \
+    antiword \
+    poppler-utils \
+    libimage-exiftool-perl \
+    cron \
+    postfix \
+    wget \
+    php \
+    php-dev \
+    php-gd \
+    php-mysqlnd \
+    php-mbstring \
+    php-zip \
+    libapache2-mod-php \
+    ffmpeg \
+    libopencv-dev \
+    python3-opencv \
+    python3 \
+    python3-pip \
+ && rm -rf /var/lib/apt/lists/*
+RUN sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 10G/g" /etc/php/7.4/apache2/php.ini                                                      
+RUN sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 10G/g" /etc/php/7.4/apache2/php.ini                                                                  
+RUN sed -i -e "s/max_execution_time\s*=\s*30/max_execution_time = 10000/g" /etc/php/7.4/apache2/php.ini                                                      
+RUN sed -i -e "s/memory_limit\s*=\s*128M/memory_limit = 4G/g" /etc/php/7.4/apache2/php.ini
 
-VOLUME /etc/nginx/ssl
+RUN printf '<Directory /var/www/>\n\
+\tOptions FollowSymLinks\n\
+</Directory>\n'\
+>> /etc/apache2/sites-enabled/000-default.conf
 
-EXPOSE 80 443
+ADD cronjob /etc/cron.daily/resourcespace
 
-ARG VERSION
-
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
-
-RUN apk update && \
-    apk add openssl unzip nginx bash ca-certificates s6 curl ssmtp mailx php7 php7-phar php7-curl \
-    php7-fpm php7-json php7-zlib php7-xml php7-dom php7-ctype php7-opcache php7-zip php7-iconv \
-    php7-pdo php7-pdo_mysql php7-pdo_sqlite php7-pdo_pgsql php7-mbstring php7-session php7-bcmath \
-    php7-gd php7-mcrypt php7-openssl php7-sockets php7-posix php7-ldap php7-simplexml php7-fileinfo \
-    php7-mysqli php7-dev php7-intl imagemagick ffmpeg ghostscript exiftool subversion mysql-client && \
-    rm -rf /var/cache/apk/* && \
-    rm -rf /var/www/localhost && \
-    rm -f /etc/php7/php-fpm.d/www.conf
-
-ADD . /var/www/app
-ADD docker/ /
-RUN svn co http://svn.resourcespace.com/svn/rs/releases/9.2/ ./var/www/app
-
-VOLUME /var/www/app/include
-VOLUME /var/www/app/filestore
-
-RUN rm -rf /var/www/app/docker && echo $VERSION > /version.txt
-
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD []
+WORKDIR /var/www/html
+RUN rm index.html
+RUN svn co https://svn.resourcespace.com/svn/rs/releases/9.7 .
+RUN mkdir filestore
+RUN chmod 777 filestore
+RUN chmod -R 777 include/
+CMD apachectl -D FOREGROUND
