@@ -1,4 +1,4 @@
-FROM quay.io/baselibrary/ubuntu:latest
+FROM quay.io/cybozu/ubuntu-minimal:focal-20211006
 ENV DEBIAN_FRONTEND="noninteractive"
 RUN apt-get update && apt-get install -y \
     vim \
