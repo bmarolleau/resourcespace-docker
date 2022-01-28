@@ -45,5 +45,8 @@ RUN chmod 777 filestore
 RUN chmod -R 777 include/
 EXPOSE 8080 8443
 RUN sed -i -e 's/80/8080/g' -e 's/443/8443/g' /etc/apache2/ports.conf
-USER 2000
+WORKDIR /var
+RUN chown -R 1001:0 .
+USER 1001
+ENV APACHE_SERVER_NAME=__default__
 CMD apachectl -D FOREGROUND
