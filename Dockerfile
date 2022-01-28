@@ -43,4 +43,7 @@ RUN svn co https://svn.resourcespace.com/svn/rs/releases/9.7 .
 RUN mkdir filestore
 RUN chmod 777 filestore
 RUN chmod -R 777 include/
+EXPOSE 8080 8443
+RUN sed -i -e 's/80/8080/g' -e 's/443/8443/g' /etc/apache2/ports.conf
+USER 2000
 CMD apachectl -D FOREGROUND
