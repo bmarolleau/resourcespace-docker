@@ -1,5 +1,4 @@
-FROM ubuntu:latest
-MAINTAINER Stefan Weiberg <sweiberg@suse.com>
+FROM quay.io/baselibrary/ubuntu:latest
 ENV DEBIAN_FRONTEND="noninteractive"
 RUN apt-get update && apt-get install -y \
     vim \
